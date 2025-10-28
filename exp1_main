@@ -1,0 +1,124 @@
+#include <sstream>
+#include <iostream>
+#include <iomanip>
+#include <ctime>
+#include "Vector.h"
+#include "Complex.h"
+#include "calculator.h"
+#include "rectangle.h"
+using namespace std;
+
+Vector<Complex> makeComplexVec(int n, bool allowDup = true) {
+    Vector<Complex> v;
+    for (int i = 0; i < n; ++i) {
+        double r = rand() % 20 - 10.0, im = rand() % 20 - 10.0;
+        v.insert(v.size(), Complex(r, im));
+        if (!allowDup) v.deduplicate();
+    }
+    return v;
+}
+
+#define TIMEIT(name, code) do { \
+    clock_t t = clock(); code; t = clock() - t; \
+    cout << (name) << " time: " << fixed << setprecision(2) \
+         << 1000.0 * t / CLOCKS_PER_SEC << " ms\n"; \
+} while (0)
+
+void testComplexVector() {
+    cout << "========== 1. Complex Vector (Step-by-Step) ==========\n";
+    Vector<Complex> v = makeComplexVec(10, true);
+    cout << "1. Original (may dup): ";
+    for (int i = 0; i < v.size(); ++i) cout << v[i] << ' ';
+    cout << "\n";
+    v.unsort(0, v.size());
+    cout << "2. After unsort: ";
+    for (int i = 0; i < v.size(); ++i) cout << v[i] << ' ';
+    cout << "\n";
+    Complex key = v[3];
+    int idx = v.find(key, 0, v.size());
+    cout << "3. Find " << key << " -> rank = " << idx << "\n";
+    v.insert(idx, Complex(99, 99));
+    cout << "4. After insert (99+99i) -> size = " << v.size() << "\n";
+    v.remove(idx);
+    cout << "5. After remove -> size = " << v.size() << "\n";
+    int oldSize = v.size();
+    v.deduplicate();
+    cout << "6. After deduplicate -> size = " << v.size()
+        << " (removed " << oldSize - v.size() << " dups)\n";
+    Vector<Complex> v1 = makeComplexVec(5000, false);
+    Vector<Complex> v2 = v1;          // 同副本对比
+    TIMEIT("7. BubbleSort (5000)", v1.bubbleSort(0, v1.size()));
+    TIMEIT("8. MergeSort  (5000)", v2.mergeSort(0, v2.size()));
+    Vector<Complex> sorted = makeComplexVec(1000, false);
+    sorted.sort(0, sorted.size());
+    double m1 = 5, m2 = 10;
+    Vector<Complex> sub = sorted.findModInterval(m1, m2);
+    cout << "9. Mod in [" << m1 << "," << m2 << ") -> count = "
+        << sub.size() << "\n10. Sub-vector content (first 10):\n";
+    for (int i = 0; i < min(10, sub.size()); ++i) cout << sub[i] << ' ';
+    cout << "\n";
+}
+void testCalculator() {
+    cout << "\n========== 2. Calculator ==========\n";
+    string expr;
+    cout << "Input expression: ";
+    cin.sync();
+    getline(cin, expr);
+    try {
+        cout << "Result: " << evaluate(expr) << '\n';
+    }
+    catch (const char* e) {
+        cout << "Error: " << e << '\n';
+    }
+}
+void testRectangle() {
+    cout << "\n========== 3.(1) 手动输入高度数组 （任意长度）==========\n";
+    cout << "Input heights (space separated, non-negative, ENTER to finish): ";
+    cin.sync();
+    string line;
+    getline(cin, line);
+    stringstream ss(line);
+    Vector<int> h;
+    int val;
+    bool ok = true;
+    while (ss >> val) {
+        if (val < 0) { ok = false; break; }
+        h.insert(h.size(), val);
+    }
+    if (!ok || h.empty()) {
+        cout << "Invalid heights!\n";
+    }
+    else {
+        cout << "Heights count: " << h.size() << "\nHeights: ";
+        for (int i = 0; i < h.size(); ++i) cout << h[i] << (i + 1 == h.size() ? "" : " ");
+        cout << "\nMax Area = " << largestRectangleArea(h) << '\n';
+    }
+    cout << "\n========== 3.(2) 10 组纯随机测试 ==========\n";
+    const int T = 10;
+    for (int tc = 1; tc <= T; ++tc) {
+        int n = rand() % 100 + 1;
+        Vector<int> h2;
+        for (int i = 0; i < n; ++i)
+            h2.insert(h2.size(), rand() % 100);
+        cout << "Case " << tc << ": n=" << n << " maxArea=" << largestRectangleArea(h2) << '\n';
+    }
+    cout << "\n========== 3.(3) 同 n 不同高 → 面积对比 ==========\n";
+    const int FIX_N = 12;
+    for (int tc = 1; tc <= 5; ++tc) {
+        Vector<int> h3;
+        cout << "Case " << tc << "  (n=" << FIX_N << ")  heights: ";
+        for (int i = 0; i < FIX_N; ++i) {
+            int val = rand() % 20 + 1;
+            h3.insert(h3.size(), val);
+            cout << val << (i + 1 == FIX_N ? "" : " ");
+        }
+        cout << "  →  maxArea = " << largestRectangleArea(h3) << '\n';
+    }
+} 
+int main() {
+    srand((unsigned)time(nullptr));
+    testComplexVector();
+    testCalculator();
+    testRectangle();
+    return 0;
+}
