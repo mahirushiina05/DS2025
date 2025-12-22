@@ -40,3 +40,38 @@ template <typename T> struct BinNode {
    BinNodePosi<T> imitate( const BinNodePosi<T> );
 };
 #include "BinNode_implementation.h"
+#pragma once
+#include "BinNode.h" 
+template <typename T> class BinTree { 
+protected:
+   Rank _size; BinNodePosi<T> _root; 
+public:
+   BinTree() : _size( 0 ), _root( NULL ) {} 
+   ~BinTree() { if ( 0 < _size ) remove( _root ); } 
+   BinTree( BinTree<T> const & ); 
+   Rank size() const { return _size; } 
+   bool empty() const { return !_root; } 
+   BinNodePosi<T> root() const { return _root; } 
+   BinNodePosi<T> insert( T const& ); 
+   BinNodePosi<T> insert( T const&, BinNodePosi<T> ); 
+   BinNodePosi<T> insert( BinNodePosi<T>, T const& ); 
+   BinNodePosi<T> attach( BinTree<T>, BinNodePosi<T> ); 
+   BinNodePosi<T> attach( BinNodePosi<T>, BinTree<T> ); 
+   Rank remove ( BinNodePosi<T> ); 
+   BinTree<T>* secede ( BinNodePosi<T> ); 
+   template <typename VST> 
+   void travLevel( VST& visit ) { if ( _root ) _root->travLevel( visit ); } 
+   template <typename VST> 
+   void travPre( VST& visit ) { if ( _root ) _root->travPre( visit ); } 
+   template <typename VST> 
+   void travIn( VST& visit ) { if ( _root ) _root->travIn( visit ); } 
+   template <typename VST> 
+   void travPost( VST& visit ) { if ( _root ) _root->travPost( visit ); } 
+   template <typename VST> 
+   void traverse ( VST& ); 
+   bool operator<( BinTree<T> const& t 
+      { return _root && t._root && ( *_root < *(t._root) ); }
+   bool operator==( BinTree<T> const& t )
+      { return _root && t._root && ( _root == t._root ); }
+};
+#include "BinTree_implementation.h"
